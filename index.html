@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Cobra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2f;
+            color: #f1f1f1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+    
+        h1 {
+            font-size: 3rem;
+            color: #76c893;
+            margin-bottom: 10px;
+        }
+    
+        .instructions {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    
+        #main {
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+    
+        table {
+            border-spacing: 2px;
+            background-color: #333;
+            width: 90vmin;
+            height: 90vmin;
+            max-width: 500px;
+            max-height: 500px;
+        }
+    
+        td {
+            background-color: #f1f1f1;
+            width: 10%;
+            height: 10%;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+    
+        .snake {
+            background-color: #3cb371 !important;
+        }
+    
+        .apple {
+            background-color: #ff3333 !important;
+        }
+    
+        .enemy {
+            background-color: #ffcc00 !important;
+        }
+    
+        footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+    
+        #startButton {
+            padding: 10px 20px;
+            background-color: #76c893;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+    
+        #startButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    
+        .head {
+            background-color: #76c893 !important;
+            box-shadow: 0 0 10px 5px #76c893;
+        }
+    
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+    
+        .controls button {
+            background-color: #76c893;
+            border: none;
+            color: white;
+            padding: 10px;
+            font-size: 1.5rem;
+            margin: 5px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+        }
+    
+        .controls div {
+            display: flex;
+            gap: 10px;
+        }
+    
+        .controls button:active {
+            background-color: #5fa581;
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>Jogo da Cobra</h1>
+    <div class="instructions">
+        Pressione F5 para reiniciar no desktop.<br>
+        Use as setas do teclado ou os botões abaixo para jogar no celular.
+    </div>
+    <div id="main"></div>
+
+    <div id="story"></div>
+    <button id="startButton" onclick="iniciarFase()">Iniciar Fase</button>
+
+    <div class="controls">
+        <button onclick="pegadirecao(38)">▲</button>
+        <div>
+            <button onclick="pegadirecao(37)">◄</button>
+            <button onclick="pegadirecao(39)">►</button>
+        </div>
+        <button onclick="pegadirecao(40)">▼</button>
+    </div>
+
+    <script>
+        let tabuleiro = "<table align='center'>";
+        let mx, my, ex, ey;
+        let cobra = [[5, 0]];
+        let direcao = 2;
+        let vivo = true;
+        let fase = 1;
+        let velocidade = 300;
+        let quantidadeMacas = 5; // Número de maçãs a coletar na fase 1
+        let historia = [
+            "Fase 1: Bem-vindo ao Jogo da Cobra! Você acabou de entrar na floresta e precisa coletar 5 maçãs para sobreviver. Cuidado com os limites do tabuleiro!",
+            "Fase 2: A cobra está ficando mais ágil! Agora você está em um pomar com 10 maçãs. Preste atenção nos movimentos mais rápidos e não se enrole!",
+            "Fase 3: O desafio está aumentando! Você chegou a um terreno mais acidentado. São 15 maçãs escondidas entre pedras e arbustos. Mova-se com cuidado!",
+            "Fase Final: Perigo à vista! Um inimigo surgiu para proteger as maçãs restantes. Você precisa coletar 20 maçãs e evitar a colisão com ele. Boa sorte!"
+        ];
+
+        for (let x = 0; x < 10; x++) {
+            tabuleiro += "<tr>";
+            for (let y = 0; y < 10; y++) {
+                tabuleiro += `<td id="td${x}_${y}"></td>`;
+            }
+            tabuleiro += "</tr>";
+        }
+        tabuleiro += "</table>";
+        document.getElementById("main").innerHTML = tabuleiro;
+
+        function desenhapedaco(x, y) {
+            document.getElementById(`td${x}_${y}`).classList.add("snake");
+        }
+
+        function apagapedaco(x, y) {
+            document.getElementById(`td${x}_${y}`).classList.remove("snake");
+        }
+
+        function geramaca() {
+            if (typeof mx !== 'undefined' && typeof my !== 'undefined') {
+                document.getElementById(`td${mx}_${my}`).classList.remove("apple");
+            }
+            mx = parseInt(Math.random() * 10);
+            my = parseInt(Math.random() * 10);
+            while (cobra.some(segmento => segmento[0] === mx && segmento[1] === my)) {
+                mx = parseInt(Math.random() * 10);
+                my = parseInt(Math.random() * 10);
+            }
+            document.getElementById(`td${mx}_${my}`).classList.add("apple");
+        }
+
+        function geraInimigo() {
+            if (fase === 4) {
+                if (typeof ex !== 'undefined' && typeof ey !== 'undefined') {
+                    document.getElementById(`td${ex}_${ey}`).classList.remove("enemy");
+                }
+                ex = parseInt(Math.random() * 10);
+                ey = parseInt(Math.random() * 10);
+                while (cobra.some(segmento => segmento[0] === ex && segmento[1] === ey)) {
+                    ex = parseInt(Math.random() * 10);
+                    ey = parseInt(Math.random() * 10);
+                }
+                document.getElementById(`td${ex}_${ey}`).classList.add("enemy");
+            }
+        }
+
+        function anda() {
+            apagapedaco(cobra[cobra.length - 1][0], cobra[cobra.length - 1][1]);
+
+            if (mx == cobra[0][0] && my == cobra[0][1]) {
+                geramaca();
+                cobra.push([10, 10]);
+                quantidadeMacas--; // Diminuir a quantidade de maçãs restantes
+            }
+
+            for (let x = cobra.length - 1; x > 0; x--) {
+                cobra[x][0] = cobra[x - 1][0];
+                cobra[x][1] = cobra[x - 1][1];
+            }
+
+            if (direcao === 0) cobra[0][1]--;
+            if (direcao === 1) cobra[0][0]--;
+            if (direcao === 2) cobra[0][1]++;
+            if (direcao === 3) cobra[0][0]++;
+
+            if (cobra[0][0] < 0 || cobra[0][1] < 0 || cobra[0][0] > 9 || cobra[0][1] > 9) vivo = false;
+
+            for (let x = 1; x < cobra.length; x++) {
+                if (cobra[x][0] === cobra[0][0] && cobra[x][1] === cobra[0][1]) vivo = false;
+            }
+
+            if (fase === 4 && cobra[0][0] === ex && cobra[0][1] === ey) {
+                vivo = false;
+            }
+
+            if (quantidadeMacas <= 0) {
+                fase++;
+                quantidadeMacas = 5 * fase;
+                document.getElementById("story").innerHTML = historia[fase - 1];
+            }
+
+            if (vivo) {
+                desenhapedaco(cobra[0][0], cobra[0][1]);
+                geraInimigo();
+                setTimeout(anda, velocidade);
+            } else {
+                alert(`Game over.\nVocê coletou ${(cobra.length - 1)} maçãs.`);
+            }
+        }
+
+        function iniciarFase() {
+            for (let x = 0; x < cobra.length; x++) apagapedaco(cobra[x][0], cobra[x][1]);
+            cobra = [[5, 0]];
+            direcao = 2;
+            quantidadeMacas = 5 * fase;
+            geramaca();
+            geraInimigo();
+            vivo = true;
+            document.getElementById("story").innerHTML = historia[fase - 1];
+            setTimeout(anda, velocidade);
+        }
+
+        document.addEventListener("keydown", event => {
+            const key = event.keyCode;
+            if ((key === 37 || key === 65) && direcao !== 2) direcao = 0; // Esquerda
+            if ((key === 38 || key === 87) && direcao !== 3) direcao = 1; // Cima
+            if ((key === 39 || key === 68) && direcao !== 0) direcao = 2; // Direita
+            if ((key === 40 || key === 83) && direcao !== 1) direcao = 3; // Baixo
+        });
+
+        function pegadirecao(key) {
+            if ((key === 37 || key === 65) && direcao !== 2) direcao = 0; // Esquerda
+            if ((key === 38 || key === 87) && direcao !== 3) direcao = 1; // Cima
+            if ((key === 39 || key === 68) && direcao !== 0) direcao = 2; // Direita
+            if ((key === 40 || key === 83) && direcao !== 1) direcao = 3; // Baixo
+        }
+    </script>
+</body>
+</html>
