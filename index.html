@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Jogo da Cobra</title>
     <style>
         body {
@@ -17,25 +17,25 @@
             justify-content: center;
             height: 100vh;
         }
-    
+
         h1 {
             font-size: 3rem;
             color: #76c893;
             margin-bottom: 10px;
         }
-    
+
         .instructions {
             font-size: 1rem;
             margin-bottom: 20px;
             text-align: center;
         }
-    
+
         #main {
             margin: 0 auto;
             display: flex;
             justify-content: center;
         }
-    
+
         table {
             border-spacing: 2px;
             background-color: #333;
@@ -44,7 +44,7 @@
             max-width: 500px;
             max-height: 500px;
         }
-    
+
         td {
             background-color: #f1f1f1;
             width: 10%;
@@ -52,25 +52,25 @@
             border-radius: 5px;
             transition: background-color 0.3s ease;
         }
-    
+
         .snake {
             background-color: #3cb371 !important;
         }
-    
+
         .apple {
             background-color: #ff3333 !important;
         }
-    
+
         .enemy {
             background-color: #ffcc00 !important;
         }
-    
+
         footer {
             margin-top: 20px;
             font-size: 0.9rem;
             color: #888;
         }
-    
+
         #startButton {
             padding: 10px 20px;
             background-color: #76c893;
@@ -80,47 +80,55 @@
             font-size: 1rem;
             margin-top: 20px;
         }
-    
+
         #startButton:disabled {
             background-color: #ccc;
             cursor: not-allowed;
         }
-    
+
         .head {
             background-color: #76c893 !important;
             box-shadow: 0 0 10px 5px #76c893;
         }
-    
+
         .controls {
             display: flex;
             flex-direction: column;
             align-items: center;
             margin-top: 20px;
+            gap: 10px;
         }
-    
+
         .controls button {
             background-color: #76c893;
             border: none;
             color: white;
-            padding: 10px;
+            padding: 15px;
             font-size: 1.5rem;
             margin: 5px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             cursor: pointer;
         }
-    
+
         .controls div {
             display: flex;
-            gap: 10px;
+            gap: 20px;
         }
-    
+
         .controls button:active {
             background-color: #5fa581;
         }
+
+        @media (max-width: 600px) {
+            .controls button {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+        }
     </style>
-    
 </head>
 <body>
     <h1>Jogo da Cobra</h1>
